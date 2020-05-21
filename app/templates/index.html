@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>powerplants engie challenge</title>
+
+    <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            // namespace for the physical channel
+            namespace = '/test';
+
+            // Conncect to the Socket.IO server
+            var socket = io(namespace);
+
+            socket.on('event', function(data){
+                $('#input').html(JSON.stringify(data.inp))
+                $('#response').html(JSON.stringify(data.sol))
+            })
+
+        })
+
+    </script>
+
+
+</head>
+<body>
+<h1>TEST WEB SOCKET Page</h1>
+<h2>Input</h2>
+<div id="input"></div>
+
+<h2>Response</h2>
+<div id="response"></div>
+</body>
+</html>

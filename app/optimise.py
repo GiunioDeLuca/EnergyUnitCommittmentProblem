@@ -3,20 +3,25 @@ import pandas as pd
 import numpy as np
 from itertools import product
 
+
 def totsum(x: np.array, y: np.array) -> float:
-    if isinstance(x,list):
+    if isinstance(x, list):
         x = np.array(x)
-    if isinstance(y,list):
+    if isinstance(y, list):
         y = np.array(y)
     return sum(x * y)
 
 
-def optimAlg(ROCK: dict, finit=5, fref=10, fctapp=0.1) -> list:
+def optimAlg(ROCK: dict, finit=6, fref=8, fctapp=1.5) -> list:
     """
     Elaborate the solution.
 
-    :param ROCK: dictionary coming from the json file
-    :return: the solution in the required format
+    :param
+        ROCK: dictionary coming from the json file
+        finit: sampling number for the first guess solution
+        fref: sampling number for the refined solution
+    :return:
+        the solution in the required format
     """
 
 
@@ -33,12 +38,17 @@ def optimAlg(ROCK: dict, finit=5, fref=10, fctapp=0.1) -> list:
     DF['eff'] = DF.apply(aggeff, axis=1)
 
     # check the maximum power of the power plants
-    powermax = totsum(DF['pmax'].to_numpy(),DF['eff'].to_numpy())
+    powermax = totsum(DF['pmax'].to_numpy(), DF['eff'].to_numpy())
     if powermax < Load:
-        raise Exception(f"""Required demand cannot be supplied.
+        print(f"""demand cannot be supplied.
         Required Load: {Load:.0f} MWh
         Max supplied Load: {powermax:.0f} MWh
         """)
+        return {"message" : "Powerplants cannot supply the required load"}, 406
+        # raise Exception(f"""Required demand cannot be supplied.
+        # Required Load: {Load:.0f} MWh
+        # Max supplied Load: {powermax:.0f} MWh
+        # """)
 
     def getNcomb(row):  # get number of operating status for each powerplant
         if row['type'] == "gasfired":
@@ -93,7 +103,6 @@ def optimAlg(ROCK: dict, finit=5, fref=10, fctapp=0.1) -> list:
             fctpow *= 1.5
 
     print("Refining first guess solution")
-
     initCost = np.inf
     while True:
         refiniment = False
@@ -103,14 +112,12 @@ def optimAlg(ROCK: dict, finit=5, fref=10, fctapp=0.1) -> list:
                                             prodapp[k] + prec[k],
                                             fref, retstep=True)
             stateapp = np.unique(np.round(stateapp))
-            stateapp1 = stateapp
             states[k] = stateapp[((stateapp >= DF.iloc[k]['pmin']) &
                                   (stateapp <= DF.iloc[k]['pmax'])) |
                                  (stateapp == 0)]
-            #print(states[k])
             if DF.iloc[k]['type'] == 'gasfired' and\
                     np.array_equiv(0, states[k]):
-                states[k] = np.append(0,DF.iloc[k]['pmin'])
+                states[k] = np.zeros(1)
         powertol = min(prec)
         for prod in product(*states):
             n += 1
@@ -128,27 +135,35 @@ def optimAlg(ROCK: dict, finit=5, fref=10, fctapp=0.1) -> list:
             if not refiniment:
                 print("solution not refined")
             break
-        if not refiniment:
-            prec = [kak * fctapp for kak in prec]
         else:
-            prec = [kak/fctapp for kak in prec]
+            prec = [kak * fctapp for kak in prec]
+        #else:
+        #    prec = [kak * fctapp for kak in prec]
 
 
     prodappint = [int(kak) for kak in prodapp]
     DF['p'] = prodappint
 
-    print(f"Solution found in {n:.3e} out of {DF['Ncomb'].product():.3e} total evaluations")
+    print(f"Evaluated {n:.3e} out of {DF['Ncomb'].product():.3e} solutions")
     print("Final Solution")
     print(DF[['name', 'type', 'pmin', 'pmax', 'costMWh', 'eff', 'p']].to_string(index=False))
-
     output = DF[['name', 'p']].to_dict("records")
-    # print(DF['Ncomb'].product())
-    print(output)
-    return output
+    return output, 200
+
+
+def debugAlg(ROCK: dict):
+    """Like optimAlg syntax but gives all zero.
+
+    Used for debugging
+    """
+    DF = pd.DataFrame(ROCK["powerplants"])
+    DF['p'] = 0
+    return DF[['name', 'p']].to_dict("records")
 
 
 if __name__ == '__main__':
-    with open('../example_payloads/payload1.json', 'r') as jsonnelle:
+    with open('../example_payloads/payload2.json', 'r') as jsonnelle:
         coco = json.load(jsonnelle)
     jsonnelle.close()
     pip=optimAlg(coco)
+    print(pip)
