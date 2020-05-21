@@ -1,6 +1,4 @@
-#FROM python:3.6.5
-#FROM tiangolo/uwsgi-nginx-flask:python3.6-alpine3.7
-FROM quoinedev/python3.6-pandas-alpine
+FROM python:3.6.5
 
 MAINTAINER GIUNIO Name "giuniodl@live.it"
 
