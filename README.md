@@ -69,13 +69,18 @@ curl --location --request POST 'http://127.0.0.1:8888/productionplan' \
 ]
 ````
 
-### Connect to the websocket server
-#### Directly write into the browser:
+### Websocket server
+The API inegrate a websocket server that emits 
+after every POST the input of the POST together with
+the response to every client connected on the websocket
+
+To connect to the websocket,
+directly type into the browser:
+
 ```
 http://localhost:8888/websocket-server
 ```
-
-#### Return the http page connected to test the websocket:
+It returns the page of websocket server:
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -136,12 +141,12 @@ by considering the emission of CO2 only for the gasfired plants
 and not for the turbojet (as specified by the challenge).
 
 The websocket is implemented by using Socket.IO. 
-This allow to run the API on every browser, 
-even for those ws protocol is not supported. 
+This allows every browser to run the websocket, 
+even those that not support ws protocol. 
 However, the websocket cannot be tested with
 ws based address testing modes (such as Websocket Test Client from Chrome).
 
-For more details or questions contact directly the [author](giuniodl@live.it) 
+For more details or questions contact directly the [author](giuniodl@live.it).
 
 ## Author
 Giunio De Luca
